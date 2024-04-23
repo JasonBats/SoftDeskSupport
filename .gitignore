@@ -1,2 +1,5 @@
 .idea/
 db.sqlite3
+authentication/migrations/
+authentication/__pycache__/
+SoftDeskSupport/__pycache__/
