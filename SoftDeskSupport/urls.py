@@ -17,8 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 import authentication.views
+import SoftDeskApp.views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('signup/', authentication.views.signup, name='signup')
+    path('signup/', authentication.views.signup, name='signup'),
+    path('home/', SoftDeskApp.views.homepage, name='home'),
+    path('project_creation/', SoftDeskApp.views.project_creation_view, name='project_creation'),
+    path('issue_creation/', SoftDeskApp.views.issue_creation_view, name='issue_creation'),
+    path('comment_creation/', SoftDeskApp.views.comment_creation_view, name='comment_creation'),
 ]

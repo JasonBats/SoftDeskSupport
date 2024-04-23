@@ -1,0 +1,12 @@
+Ici c'est la home tahu
+<h1>Bienvenue {{ user }}</h1>
+
+<h2>Projets</h2>
+{% for project in projects %}
+    <p>{{ project.name }}</p>
+{% endfor %}
+
+<h2>Issues</h2>
+{% for issue in issues %}
+    <p>{{ issue.name }} -- à propos de : {{ issue.project }}</p>
+{% endfor %}
