@@ -8,6 +8,19 @@ from SoftDeskApp.serializers import IssueListSerializer, ProjectListSerializer
 
 class SoftDeskAppAPITestCase(APITestCase):
 
+    def format_datetime(self, date):
+        return date.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+
+    def serialize_issues_list(self, data, is_many):
+        issues_list_serializer = IssueListSerializer(data, many=is_many)
+        serialized_issues = issues_list_serializer.data
+        return serialized_issues
+
+    def serialize_projects_list(self, data, is_many):
+        projects_list_serializer = ProjectListSerializer(data, many=is_many)
+        serialized_projects = projects_list_serializer.data
+        return serialized_projects
+
     def setUp(self):
 
         self.client = APIClient()
@@ -52,7 +65,8 @@ class SoftDeskAppAPITestCase(APITestCase):
                 'name': self.project.name,
                 'description': self.project.description,
                 'author': self.project.author_id,
-                'number_of_issues': Issue.objects.filter(project=self.project).count(),
+                'number_of_issues':
+                    Issue.objects.filter(project=self.project).count(),
             }]
         }
 
@@ -62,23 +76,23 @@ class SoftDeskAppAPITestCase(APITestCase):
 
     def test_project_detail(self):
 
-        issues = self.project.Issues
-        issues_serializer = IssueListSerializer(issues, many=True)
-        serialized_issues = issues_serializer.data
-
         expected = {
             'id': self.project.id,
-            'issues': serialized_issues,
+            'issues': self.serialize_issues_list(
+                self.project.Issues, True
+            ),
             'name': self.project.name,
             'description': self.project.description,
             'type': self.project.type,
-            'date_created': self.project.date_created.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            'date_updated': self.project.date_updated.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            'date_created': self.format_datetime(self.project.date_created),
+            'date_updated': self.format_datetime(self.project.date_updated),
             'author': self.project.author_id,
             'contributors': [],
         }
 
-        response = self.client.get(reverse_lazy('project-detail', kwargs={'pk': 1}))
+        response = self.client.get(
+            reverse_lazy('project-detail', kwargs={'pk': 1})
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(expected, response.json())
         # assert expected == response.json()
@@ -106,17 +120,14 @@ class SoftDeskAppAPITestCase(APITestCase):
 
     def test_issue_detail(self):
 
-        project = self.issue.project
-        project_serializer = ProjectListSerializer(project, many=False)
-        serialized_project = project_serializer.data
-
         expected = {
             'id': self.issue.id,
-            'project': serialized_project,
+            'project':
+                self.serialize_projects_list(self.issue.project, False),
             'name': self.issue.name,
             'description': self.issue.description,
-            'date_created': self.issue.date_created.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            'date_updated': self.issue.date_updated.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            'date_created': self.format_datetime(self.issue.date_created),
+            'date_updated': self.format_datetime(self.issue.date_updated),
             'priority': self.issue.priority,
             'nature': self.issue.nature,
             'status': self.issue.status,
@@ -124,7 +135,9 @@ class SoftDeskAppAPITestCase(APITestCase):
             'assigned_to': self.issue.assigned_to_id
         }
 
-        response = self.client.get(reverse_lazy('issue-detail', kwargs={'pk': self.issue.id}))
+        response = self.client.get(
+            reverse_lazy('issue-detail', kwargs={'pk': self.issue.id})
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(expected, response.json())
 
@@ -149,20 +162,17 @@ class SoftDeskAppAPITestCase(APITestCase):
 
     def test_comment_detail(self):
 
-        issues = self.comment.issue
-        issues_serializer = IssueListSerializer(issues, many=False)
-        serialized_issues = issues_serializer.data
-
         expected = {
             'id': self.comment.id,
-            'issue': serialized_issues,
+            'issue': self.serialize_issues_list(self.comment.issue, False),
             'description': self.comment.description,
-            'date_created': self.comment.date_created.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            'date_updated': self.comment.date_updated.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            'date_created': self.format_datetime(self.comment.date_created),
+            'date_updated': self.format_datetime(self.comment.date_updated),
             'author': self.comment.author_id,
         }
 
-        response = self.client.get(reverse_lazy('comment-detail', kwargs={'pk': self.comment.id}))
+        response = self.client.get(
+            reverse_lazy('comment-detail', kwargs={'pk': self.comment.id})
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(expected, response.json())
-        print(response.json())
