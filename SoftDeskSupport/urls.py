@@ -10,6 +10,7 @@ from SoftDeskApp.views import (project_creation_view,
                                IssueViewSet,
                                CommentViewSet,
                                AdminProjectViewSet,
+                               StaffIssueViewSet,
                                )
 
 from rest_framework import routers
@@ -21,6 +22,7 @@ router.register('project', ProjectViewSet, basename='project')
 router.register('issue', IssueViewSet, basename='issue')
 router.register('comment', CommentViewSet, basename='comment')
 router.register('admin/project', AdminProjectViewSet, basename='admin-project')
+router.register('staff/issue', StaffIssueViewSet, basename='staff-issue')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
