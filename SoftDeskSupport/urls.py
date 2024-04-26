@@ -1,29 +1,41 @@
-"""
-URL configuration for SoftDeskSupport project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
-from django.urls import path
-import authentication.views
-import SoftDeskApp.views
+from django.contrib.auth.views import LoginView, LogoutView
+from django.urls import path, include
+from authentication.views import signup
+from SoftDeskApp.views import (project_creation_view,
+                               issue_creation_view,
+                               comment_creation_view,
+                               homepage,
+                               ProjectViewSet,
+                               IssueViewSet,
+                               CommentViewSet,
+                               AdminProjectViewSet,
+                               )
+
+from rest_framework import routers
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
+
+router = routers.SimpleRouter()
+
+router.register('project', ProjectViewSet, basename='project')
+router.register('issue', IssueViewSet, basename='issue')
+router.register('comment', CommentViewSet, basename='comment')
+router.register('admin/project', AdminProjectViewSet, basename='admin-project')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('signup/', authentication.views.signup, name='signup'),
-    path('home/', SoftDeskApp.views.homepage, name='home'),
-    path('project_creation/', SoftDeskApp.views.project_creation_view, name='project_creation'),
-    path('issue_creation/', SoftDeskApp.views.issue_creation_view, name='issue_creation'),
-    path('comment_creation/', SoftDeskApp.views.comment_creation_view, name='comment_creation'),
+    path('signup/', signup, name='signup'),
+    path('home/', homepage, name='home'),
+    path('project_creation/', project_creation_view, name='project_creation'),
+    path('issue_creation/', issue_creation_view, name='issue_creation'),
+    path('comment_creation/', comment_creation_view, name='comment_creation'),
+    path('api/', include(router.urls)),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
+    path('login/', LoginView.as_view(
+        template_name='authentication/login.html',
+        redirect_authenticated_user=True),
+         name='login'),
 ]
