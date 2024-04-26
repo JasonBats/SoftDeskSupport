@@ -14,7 +14,7 @@ from SoftDeskApp.serializers import (ProjectListSerializer,
 
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 from django.contrib.auth.decorators import login_required
-from SoftDeskApp.permissions import IsAdminAuthenticated
+from SoftDeskApp.permissions import IsAdminAuthenticated, IsStaffAuthenticated, IsProjectContributorAuthenticated
 
 
 @login_required
@@ -125,5 +125,14 @@ class AdminProjectViewSet(MultipleSerializerMixin, ModelViewSet):
 
     def get_queryset(self):
         return Project.objects.all()
+
+
+class StaffIssueViewSet(MultipleSerializerMixin, ModelViewSet):
+    serializer_class = IssueListSerializer
+    detail_serializer_class = IssueDetailSerializer
+    permission_classes = [IsStaffAuthenticated]
+
+    def get_queryset(self):
+        return Issue.objects.all()
 
 # ^^^ -- Viewsets de l'API ici -- ^^^
