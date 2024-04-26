@@ -1,6 +1,10 @@
-Ici c'est la home tahu
-<h1>Bienvenue {{ user }}</h1>
-
+<h1>Bienvenue {{ user }}</h1><form method="post" action="{% url 'logout' %}"><button type="submit">{% csrf_token %}Se déconnecter</button></form>
+<h2>Permissions :</h2>
+<ul>
+    <li>Is_superuser : {{ user.is_superuser }}</li>
+    <li>Is_staff : {{ user.is_staff }}</li>
+    <li>Autorization header : {{ authorization_header }}</li> {{ request.user }}
+</ul>
 <h2>Projets</h2>
 {% for project in projects %}
     <p>{{ project.name }}</p>
@@ -9,4 +13,9 @@ Ici c'est la home tahu
 <h2>Issues</h2>
 {% for issue in issues %}
     <p>{{ issue.name }} -- à propos de : {{ issue.project }}</p>
+{% endfor %}
+
+<h2>Comments</h2>
+{% for comment in comments %}
+    <p>{{ comment.description }} -- à propos de {{ comment.issue }} concernant le projet : {{ comment.issue.project }}</p>
 {% endfor %}
