@@ -1,3 +1,9 @@
 from django.contrib import admin
+from SoftDeskApp.models import Project, Issue, Comment, Contributor
 
-# Register your models here.
+
+class ProjectAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(Project, ProjectAdmin)
