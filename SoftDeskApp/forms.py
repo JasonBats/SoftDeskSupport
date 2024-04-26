@@ -11,7 +11,8 @@ class ProjectForm(forms.ModelForm):
 class IssueForm(forms.ModelForm):
     class Meta:
         model = Issue
-        fields = ['project', 'name', 'description', 'assigned_to', 'priority', 'nature', 'status']
+        fields = ['project', 'name', 'description',
+                  'assigned_to', 'priority', 'nature', 'status']
 
 
 class CommentForm(forms.ModelForm):
