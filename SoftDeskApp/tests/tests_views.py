@@ -110,6 +110,7 @@ class SoftDeskAppAPITestCase(APITestCase):
                     'description': self.issue.description,
                     'author': self.issue.author_id,
                     'assigned_to': self.issue.assigned_to_id,
+                    'project': self.project.id,
                 }
             ]
         }
