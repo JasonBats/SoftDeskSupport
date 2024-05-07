@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from . import forms
 from django.contrib.auth import login
 from django.conf import settings
-from SoftDeskSupport.utils import get_user_age, define_can_be_shared
+from SoftDeskSupport.utils import get_user_age, define_can_be_signed_up
 
 
 def signup(request):
@@ -12,8 +12,10 @@ def signup(request):
         if form.is_valid():
             user = form.save(commit=False)
             user.age = get_user_age(user.birth_date)
-            user.can_be_shared = define_can_be_shared(user.age)
-            user.save()
-            login(request, user)
-            return redirect(settings.LOGIN_REDIRECT_URL)
+            if define_can_be_signed_up(user.age):
+                user.save()
+                login(request, user)
+                return redirect(settings.LOGIN_REDIRECT_URL)
+            else:
+                return redirect(settings.LOGIN_URL)
     return render(request, 'authentication/signup.html', context={'form': form})
