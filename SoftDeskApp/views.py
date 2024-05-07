@@ -1,84 +1,26 @@
-from django.shortcuts import render, redirect
+from django.contrib.auth.hashers import make_password
 
-from SoftDeskApp.models import Project, Issue, Comment
-from SoftDeskSupport.settings import LOGIN_REDIRECT_URL
-from SoftDeskApp.forms import ProjectForm, IssueForm, CommentForm
+from SoftDeskApp.models import Project, Issue, Comment, Contributor
+from SoftDeskSupport.utils import get_user_age
+from authentication.models import User
 
 from SoftDeskApp.serializers import (ProjectListSerializer,
                                      ProjectDetailSerializer,
                                      IssueListSerializer,
                                      IssueDetailSerializer,
                                      CommentListSerializer,
-                                     CommentDetailSerializer
-                                     )
+                                     CommentDetailSerializer,
+                                     UserListSerializer,
+                                     UserDetailSerializer,
+                                     ContributorSerializer,
+                                     ContributorDetailSerializer)
 
-from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
-from django.contrib.auth.decorators import login_required
-from SoftDeskApp.permissions import IsAdminAuthenticated, IsStaffAuthenticated, IsProjectContributorAuthenticated
-
-
-@login_required
-def homepage(request):
-    projects = Project.objects.all()
-    issues = Issue.objects.all()
-    comments = Comment.objects.all()
-    user = request.user
-    return render(
-        request,
-        'SoftDeskApp/home.html',
-        context={
-            'projects': projects,
-            'user': user,
-            'issues': issues,
-            'comments': comments
-        }
-    )
-
-
-def project_creation_view(request):
-    form = ProjectForm()
-    if request.method == 'POST':
-        form = ProjectForm(request.POST)
-        if form.is_valid():
-            project_instance = form.save(commit=False)
-            project_instance.author = request.user
-            project_instance.save()
-            return redirect(LOGIN_REDIRECT_URL)
-    return render(
-        request,
-        'SoftDeskApp/project_creation_form.html',
-        context={'form': form})
-
-
-def issue_creation_view(request):
-    form = IssueForm
-    if request.method == 'POST':
-        form = IssueForm(request.POST)
-        if form.is_valid():
-            issue_instance = form.save(commit=False)
-            issue_instance.author = request.user
-            issue_instance.save()
-            return redirect(LOGIN_REDIRECT_URL)
-    return render(
-        request,
-        'SoftDeskApp/issue_creation_form.html',
-        context={'form': form})
-
-def comment_creation_view(request):
-    form = CommentForm
-    if request.method == 'POST':
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            comment_instance = form.save(commit=False)
-            comment_instance.author = request.user
-            comment_instance.save()
-            return redirect(LOGIN_REDIRECT_URL)
-    return render(
-        request,
-        'SoftDeskApp/comment_creation.html',
-        context={'form': form})
-
-# vvv -- Viewsets de l'API ici -- vvv
+from rest_framework.viewsets import ModelViewSet
+from SoftDeskApp.permissions import (IsStaffAuthenticated,
+                                     IsProjectContributorAuthenticated,
+                                     IsRightUser,
+                                     IsOwnerOrReadOnly,
+                                     CanManageProjectContributors)
 
 
 class MultipleSerializerMixin:
@@ -91,40 +33,45 @@ class MultipleSerializerMixin:
         return super().get_serializer_class()
 
 
-class ProjectViewSet(MultipleSerializerMixin, ReadOnlyModelViewSet):
-
+class ProjectViewSet(MultipleSerializerMixin, ModelViewSet):
     serializer_class = ProjectListSerializer
     detail_serializer_class = ProjectDetailSerializer
+    permission_classes = [IsOwnerOrReadOnly]
 
     def get_queryset(self):
         return Project.objects.all()
 
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
-class IssueViewSet(MultipleSerializerMixin, ReadOnlyModelViewSet):
+
+class IssueViewSet(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = IssueListSerializer
     detail_serializer_class = IssueDetailSerializer
+    permission_classes = [IsOwnerOrReadOnly, IsProjectContributorAuthenticated]
 
     def get_queryset(self):
+        project_id = self.request.query_params.get('project')
+        if project_id:
+            return Issue.objects.filter(project_id=project_id)
         return Issue.objects.all()
 
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
-class CommentViewSet(MultipleSerializerMixin, ReadOnlyModelViewSet):
+
+class CommentViewSet(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = CommentListSerializer
     detail_serializer_class = CommentDetailSerializer
+    permission_classes = [IsOwnerOrReadOnly, IsProjectContributorAuthenticated]  # TODO : Vérifier si la permission fonctionne toujours sur cette viewset
 
     def get_queryset(self):
         return Comment.objects.all()
 
-
-class AdminProjectViewSet(MultipleSerializerMixin, ModelViewSet):
-    serializer_class = ProjectListSerializer
-    detail_serializer_class = ProjectDetailSerializer
-    permission_classes = [IsAdminAuthenticated]
-
-    def get_queryset(self):
-        return Project.objects.all()
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
 
 class StaffIssueViewSet(MultipleSerializerMixin, ModelViewSet):
@@ -135,4 +82,30 @@ class StaffIssueViewSet(MultipleSerializerMixin, ModelViewSet):
     def get_queryset(self):
         return Issue.objects.all()
 
-# ^^^ -- Viewsets de l'API ici -- ^^^
+
+class UserListViewSet(MultipleSerializerMixin, ModelViewSet):
+
+    serializer_class = UserListSerializer
+    detail_serializer_class = UserDetailSerializer
+    permission_classes = [IsRightUser, IsStaffAuthenticated]
+
+    def get_queryset(self):
+        return User.objects.all()
+
+    def perform_create(self, serializer):
+        password = self.request.data['password']
+        hashed_password = make_password(password)
+        serializer.save(
+            age=get_user_age(self.request.data['birth_date']),
+            password=hashed_password
+        )
+
+
+class ContributorViewSet(MultipleSerializerMixin, ModelViewSet):
+
+    serializer_class = ContributorSerializer
+    detail_serializer_class = ContributorDetailSerializer
+    permission_classes = [CanManageProjectContributors]
+
+    def get_queryset(self):
+        return Contributor.objects.all()
