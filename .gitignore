@@ -3,3 +3,7 @@ db.sqlite3
 authentication/migrations/
 authentication/__pycache__/
 SoftDeskSupport/__pycache__/
+SoftDeskApp/__pycache__/
+SoftDeskApp/migrations/
+SoftDeskApp/tests/__pycache__/
+/requirements.txt
