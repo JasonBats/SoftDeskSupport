@@ -17,7 +17,12 @@ class Project(models.Model):
 
     name = models.CharField(max_length=120, blank=False, null=False)
     description = models.TextField(max_length=500, blank=True, null=True)
-    type = models.CharField(max_length=10, choices=TYPE_CHOICES, verbose_name='Type', blank=False, null=False)
+    type = models.CharField(max_length=10,
+                            choices=TYPE_CHOICES,
+                            verbose_name='Type',
+                            blank=False,
+                            null=False
+                            )
 
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
@@ -133,7 +138,11 @@ class Issue(models.Model):
 
 class Comment(models.Model):
     author = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)
-    issue = models.ForeignKey(Issue, on_delete=models.CASCADE, related_name='comments')
+    issue = models.ForeignKey(
+        Issue,
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
     description = models.TextField(max_length=500, blank=False, null=False)
 
     date_created = models.DateTimeField(auto_now_add=True)
@@ -145,4 +154,4 @@ class Comment(models.Model):
 
 class Contributor(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    user = models.OneToOneField(AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)
