@@ -3,19 +3,13 @@ from rest_framework.test import APITestCase, APIClient
 from django.urls import reverse_lazy
 from rest_framework import status
 
+from SoftDeskApp.models import Project
+
 
 class PermissionsTests(APITestCase):
     def setUp(self):
 
         self.client = APIClient()
-
-        self.admin_user = get_user_model().objects.create(
-                    username='admin_user',
-                    birth_date='1990-09-09',
-                    age=50,
-                    is_superuser=True,
-                    is_staff=False,
-                )
 
         self.staff_user = get_user_model().objects.create(
             username='staff_user',
@@ -33,62 +27,54 @@ class PermissionsTests(APITestCase):
             is_staff=False,
         )
 
-    def test_admin_restricted_view_without_permission(self):
-        """
-        View requires authenticated-superuser permission.
-        User only has staff permission.
-        403 is expected.
-        """
-        self.client.force_authenticate(user=self.staff_user)
+        self.second_employee_user = get_user_model().objects.create(
+            username='second_employee_user',
+            birth_date='1990-09-09',
+            age=50,
+            is_superuser=False,
+            is_staff=False,
+        )
 
-        url = reverse_lazy('admin-project-list')
-        response = self.client.get(url)
+        self.project = Project.objects.create(
+            name='API_TEST_PROJECT_MODEL',
+            description='API_TEST_PROJECT_DESCRIPTION',
+            type='iOS',
+            author=self.staff_user,
+        )
 
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_admin_restricted_view_without_authentication(self):
-        """
-        View requires authenticated-superuser permission.
-        Client is anonymous.
-        401 is expected.
-        """
-        url = reverse_lazy('admin-project-list')
-        response = self.client.get(url)
-
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_admin_restricted_view_with_permission(self):
-        """
-        View requires authenticated-superuser permission.
-        User is superuser
-        200 is expected.
-        """
-        self.client.force_authenticate(user=self.admin_user)
-
-        url = reverse_lazy('admin-project-list')
-        response = self.client.get(url)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_staff_restricted_view_without_permission(self):
+    def test_patch_project_without_permission(self):
         self.client.force_authenticate(user=self.employee_user)
 
-        url = reverse_lazy('staff-issue-list')
-        response = self.client.get(url)
+        url = reverse_lazy('project-detail', kwargs={'pk': 1})
+        response = self.client.patch(url)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_staff_restricted_view_with_permission(self):
+    def test_patch_project_with_permission(self):
         self.client.force_authenticate(user=self.staff_user)
 
-        url = reverse_lazy('staff-issue-list')
+        url = reverse_lazy('project-detail', kwargs={'pk': 1})
+        response = self.client.patch(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_user_info_with_permission(self):
+        self.client.force_authenticate(user=self.employee_user)
+        url = reverse_lazy('user-detail', kwargs={'pk': self.employee_user.pk})
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_staff_restricted_view_without_authentication(self):
-        url = reverse_lazy('staff-issue-list')
+    def test_get_user_info_without_permission(self):
+        self.client.force_authenticate(user=self.second_employee_user)
+        url = reverse_lazy('user-detail', kwargs={'pk': self.employee_user.pk})
         response = self.client.get(url)
 
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_get_user_info_as_staff(self):
+        self.client.force_authenticate(user=self.staff_user)
+        url = reverse_lazy('user-detail', kwargs={'pk': self.employee_user.pk})
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
