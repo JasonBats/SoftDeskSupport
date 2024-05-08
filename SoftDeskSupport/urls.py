@@ -5,7 +5,6 @@ from authentication.views import signup
 from SoftDeskApp.views import (ProjectViewSet,
                                IssueViewSet,
                                CommentViewSet,
-                               StaffIssueViewSet,
                                UserListViewSet,
                                ContributorViewSet
                                )
@@ -21,7 +20,6 @@ router = routers.SimpleRouter()
 router.register('project', ProjectViewSet, basename='project')
 router.register('issue', IssueViewSet, basename='issue')
 router.register('comment', CommentViewSet, basename='comment')
-router.register('staff/issue', StaffIssueViewSet, basename='staff-issue')
 router.register('user', UserListViewSet, basename='user')
 router.register('contributor', ContributorViewSet, basename='contributor')
 
