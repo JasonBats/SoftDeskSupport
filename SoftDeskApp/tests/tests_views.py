@@ -1,15 +1,21 @@
 from django.urls import reverse_lazy
 from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 from SoftDeskApp.models import Project, Issue, Comment
-from SoftDeskApp.serializers import IssueListSerializer, ProjectListSerializer
+from SoftDeskApp.serializers import IssueListSerializer, ProjectListSerializer, CommentListSerializer
 
 
 class SoftDeskAppAPITestCase(APITestCase):
 
     def format_datetime(self, date):
         return date.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+
+    def serialize_comments_list(self, data, is_many):
+        comments_list_serializer = CommentListSerializer(data, many=is_many)
+        serialized_comments = comments_list_serializer.data
+        return serialized_comments
 
     def serialize_issues_list(self, data, is_many):
         issues_list_serializer = IssueListSerializer(data, many=is_many)
@@ -30,6 +36,9 @@ class SoftDeskAppAPITestCase(APITestCase):
                     birth_date='1990-09-09',
                     age=50,
                 )
+
+        self.access_token = AccessToken.for_user(self.user_api_test)
+
         self.project = Project.objects.create(
             name='API_TEST_PROJECT_MODEL',
             description='API_TEST_PROJECT_DESCRIPTION',
@@ -70,6 +79,7 @@ class SoftDeskAppAPITestCase(APITestCase):
             }]
         }
 
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + str(self.access_token))
         response = self.client.get(reverse_lazy('project-list'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(expected, response.json())
@@ -90,6 +100,7 @@ class SoftDeskAppAPITestCase(APITestCase):
             'contributors': [],
         }
 
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + str(self.access_token))
         response = self.client.get(
             reverse_lazy('project-detail', kwargs={'pk': 1})
         )
@@ -115,6 +126,7 @@ class SoftDeskAppAPITestCase(APITestCase):
             ]
         }
 
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + str(self.access_token))
         response = self.client.get(reverse_lazy('issue-list'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(expected, response.json())
@@ -125,6 +137,7 @@ class SoftDeskAppAPITestCase(APITestCase):
             'id': self.issue.id,
             'project':
                 self.serialize_projects_list(self.issue.project, False),
+            'comments': self.serialize_comments_list(self.issue.comments, True),
             'name': self.issue.name,
             'description': self.issue.description,
             'date_created': self.format_datetime(self.issue.date_created),
@@ -136,6 +149,7 @@ class SoftDeskAppAPITestCase(APITestCase):
             'assigned_to': self.issue.assigned_to_id
         }
 
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + str(self.access_token))
         response = self.client.get(
             reverse_lazy('issue-detail', kwargs={'pk': self.issue.id})
         )
@@ -151,12 +165,14 @@ class SoftDeskAppAPITestCase(APITestCase):
             'results': [
                 {
                     'id': self.comment.id,
-                    'issue': self.comment.issue_id
+                    'issue': self.comment.issue_id,
+                    'description': self.comment.description
                 }
             ]
 
         }
 
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + str(self.access_token))
         response = self.client.get(reverse_lazy('comment-list'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(expected, response.json())
@@ -172,6 +188,7 @@ class SoftDeskAppAPITestCase(APITestCase):
             'author': self.comment.author_id,
         }
 
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + str(self.access_token))
         response = self.client.get(
             reverse_lazy('comment-detail', kwargs={'pk': self.comment.id})
         )
