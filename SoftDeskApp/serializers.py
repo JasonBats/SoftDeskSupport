@@ -32,6 +32,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
 class IssueDetailSerializer(serializers.ModelSerializer):
 
     project = serializers.SerializerMethodField()
+    comments = serializers.SerializerMethodField()
 
     class Meta:
         model = Issue
@@ -40,6 +41,11 @@ class IssueDetailSerializer(serializers.ModelSerializer):
     def get_project(self, instance):
         queryset = instance.project
         serializer = ProjectListSerializer(queryset, many=False)
+        return serializer.data
+
+    def get_comments(self, instance):
+        queryset = instance.comments
+        serializer = CommentListSerializer(queryset, many=True)
         return serializer.data
 
 
