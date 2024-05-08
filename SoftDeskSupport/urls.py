@@ -6,7 +6,8 @@ from SoftDeskApp.views import (ProjectViewSet,
                                IssueViewSet,
                                CommentViewSet,
                                UserListViewSet,
-                               ContributorViewSet
+                               ContributorViewSet,
+                               SignUpUserViewSet
                                )
 
 from rest_framework import routers
@@ -22,10 +23,11 @@ router.register('issue', IssueViewSet, basename='issue')
 router.register('comment', CommentViewSet, basename='comment')
 router.register('user', UserListViewSet, basename='user')
 router.register('contributor', ContributorViewSet, basename='contributor')
+router.register('signup', SignUpUserViewSet, basename='signup')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('signup/', signup, name='signup'),
+    # path('signup/', signup, name='signup'),
     path('api/', include(router.urls)),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

@@ -19,7 +19,8 @@ from rest_framework.viewsets import ModelViewSet
 from SoftDeskApp.permissions import (IsProjectContributorAuthenticated,
                                      IsRightUser,
                                      IsOwnerOrReadOnly,
-                                     CanManageProjectContributors)
+                                     CanManageProjectContributors,
+                                     SignupViewPermissions)
 
 
 class MultipleSerializerMixin:
@@ -78,6 +79,23 @@ class UserListViewSet(MultipleSerializerMixin, ModelViewSet):
     serializer_class = UserListSerializer
     detail_serializer_class = UserDetailSerializer
     permission_classes = [IsRightUser]
+
+    def get_queryset(self):
+        return User.objects.all()
+
+    def perform_create(self, serializer):
+        password = self.request.data['password']
+        hashed_password = make_password(password)
+        serializer.save(
+            age=get_user_age(self.request.data['birth_date']),
+            password=hashed_password
+        )
+
+
+class SignUpUserViewSet(ModelViewSet):
+
+    serializer_class = UserDetailSerializer
+    permission_classes = [SignupViewPermissions]
 
     def get_queryset(self):
         return User.objects.all()
