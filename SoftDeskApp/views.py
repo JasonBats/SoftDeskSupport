@@ -16,8 +16,7 @@ from SoftDeskApp.serializers import (ProjectListSerializer,
                                      ContributorDetailSerializer)
 
 from rest_framework.viewsets import ModelViewSet
-from SoftDeskApp.permissions import (IsStaffAuthenticated,
-                                     IsProjectContributorAuthenticated,
+from SoftDeskApp.permissions import (IsProjectContributorAuthenticated,
                                      IsRightUser,
                                      IsOwnerOrReadOnly,
                                      CanManageProjectContributors)
@@ -65,7 +64,7 @@ class CommentViewSet(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = CommentListSerializer
     detail_serializer_class = CommentDetailSerializer
-    permission_classes = [IsOwnerOrReadOnly, IsProjectContributorAuthenticated]  # TODO : Vérifier si la permission fonctionne toujours sur cette viewset
+    permission_classes = [IsOwnerOrReadOnly, IsProjectContributorAuthenticated]
 
     def get_queryset(self):
         return Comment.objects.all()
@@ -74,20 +73,11 @@ class CommentViewSet(MultipleSerializerMixin, ModelViewSet):
         serializer.save(author=self.request.user)
 
 
-class StaffIssueViewSet(MultipleSerializerMixin, ModelViewSet):
-    serializer_class = IssueListSerializer
-    detail_serializer_class = IssueDetailSerializer
-    permission_classes = [IsStaffAuthenticated]
-
-    def get_queryset(self):
-        return Issue.objects.all()
-
-
 class UserListViewSet(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = UserListSerializer
     detail_serializer_class = UserDetailSerializer
-    permission_classes = [IsRightUser, IsStaffAuthenticated]
+    permission_classes = [IsRightUser]
 
     def get_queryset(self):
         return User.objects.all()
