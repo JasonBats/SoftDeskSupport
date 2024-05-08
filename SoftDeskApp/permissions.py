@@ -49,3 +49,9 @@ class CanManageProjectContributors(BasePermission):
                                        ' de ce projet pour faire cela.')
         elif request.method in SAFE_METHODS:
             return request.user.is_authenticated
+
+
+class SignupViewPermissions(BasePermission):
+    def has_permission(self, request, view):
+        if request.method == 'POST':
+            return True
