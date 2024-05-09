@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from SoftDeskApp.models import Project, Issue, Comment, Contributor
+from SoftDeskSupport.utils import get_user_age
 from authentication.models import User
 
 
@@ -53,7 +54,7 @@ class IssueListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Issue
         fields = ['id', 'name', 'description',
-                  'author', 'assigned_to', 'project']
+                  'author', 'assigned_to', 'project', 'priority', 'nature', 'status']
 
 
 class CommentDetailSerializer(serializers.ModelSerializer):
@@ -95,8 +96,9 @@ class UserDetailSerializer(serializers.ModelSerializer):
         model = User
         fields = '__all__'
 
-    def validate_age(self, value):
-        if value < 15:
+    def validate_birth_date(self, birth_date):
+        age = get_user_age(birth_date)
+        if age < 15:
             raise serializers.ValidationError('Vous n\'avez pas'
                                               ' l\'age requis (15 ans)')
 

@@ -1,13 +1,12 @@
-import datetime
+from datetime import datetime
 
 
 def get_user_age(birth_date):
-    today = datetime.datetime.today()
-    birth_date_year = int(birth_date[0:4])
-    birth_date_month = int(birth_date[5:7])
-    birth_date_day = int(birth_date[8:10])
-    age = (today.year - birth_date_year
-           - ((today.month, today.day) < (birth_date_month, birth_date_day)))
+    format_string = "%Y-%m-%d"
+    parsed_time = datetime.strptime(birth_date, format_string)
+    today = datetime.today()
+    age = (today.year - parsed_time.year
+           - ((today.month, today.day) < (parsed_time.month, parsed_time.day)))
     return age
 
 

@@ -17,7 +17,15 @@ class IsProjectContributorAuthenticated(BasePermission):
             else:
                 raise PermissionDenied('Vous devez être contributeur'
                                        ' de ce projet pour faire cela.')
-        return True
+        return request.user.is_authenticated
+
+    def has_object_permission(self, request, view, obj):
+
+        project_contributors = [user.user_id for user in
+                                Contributor.objects.filter(
+                                    project_id=obj.id)]
+        print(obj)
+        return request.user.id in project_contributors
 
 
 class IsRightUser(BasePermission):

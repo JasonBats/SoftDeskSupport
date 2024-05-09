@@ -60,6 +60,7 @@ class PermissionsTests(APITestCase):
 
     def test_get_user_info_with_permission(self):
         self.client.force_authenticate(user=self.employee_user)
+
         url = reverse_lazy('user-detail', kwargs={'pk': self.employee_user.pk})
         response = self.client.get(url)
 
@@ -67,6 +68,7 @@ class PermissionsTests(APITestCase):
 
     def test_get_user_info_without_permission(self):
         self.client.force_authenticate(user=self.second_employee_user)
+
         url = reverse_lazy('user-detail', kwargs={'pk': self.employee_user.pk})
         response = self.client.get(url)
 
@@ -74,6 +76,7 @@ class PermissionsTests(APITestCase):
 
     def test_get_user_info_as_staff(self):
         self.client.force_authenticate(user=self.staff_user)
+
         url = reverse_lazy('user-detail', kwargs={'pk': self.employee_user.pk})
         response = self.client.get(url)
 

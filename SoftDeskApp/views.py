@@ -36,13 +36,13 @@ class MultipleSerializerMixin:
 class ProjectViewSet(MultipleSerializerMixin, ModelViewSet):
     serializer_class = ProjectListSerializer
     detail_serializer_class = ProjectDetailSerializer
-    permission_classes = [IsOwnerOrReadOnly]
+    permission_classes = [IsOwnerOrReadOnly, IsProjectContributorAuthenticated]
 
     def get_queryset(self):
         return Project.objects.all()
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        serializer.save(author=self.request.user, contributors=[self.request.user])
 
 
 class IssueViewSet(MultipleSerializerMixin, ModelViewSet):
