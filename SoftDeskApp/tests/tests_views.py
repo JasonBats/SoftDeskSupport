@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
-from SoftDeskApp.models import Project, Issue, Comment
+from SoftDeskApp.models import Project, Issue, Comment, Contributor
 from SoftDeskApp.serializers import IssueListSerializer, ProjectListSerializer, CommentListSerializer
 
 
@@ -46,6 +46,11 @@ class SoftDeskAppAPITestCase(APITestCase):
             author=self.user_api_test,
         )
 
+        self.contributors = Contributor.objects.create(
+            user=self.user_api_test,
+            project=self.project
+        )
+
         self.issue = Issue.objects.create(
             name='API_TEST_ISSUE_MODEL',
             description='API_TEST_ISSUE_DESCRIPTION',
@@ -86,6 +91,10 @@ class SoftDeskAppAPITestCase(APITestCase):
 
     def test_project_detail(self):
 
+        project_contributors = [user.user_id for user in
+                                Contributor.objects.filter(
+                                    project_id=self.project.id)]
+
         expected = {
             'id': self.project.id,
             'issues': self.serialize_issues_list(
@@ -97,7 +106,7 @@ class SoftDeskAppAPITestCase(APITestCase):
             'date_created': self.format_datetime(self.project.date_created),
             'date_updated': self.format_datetime(self.project.date_updated),
             'author': self.project.author_id,
-            'contributors': [],
+            'contributors': project_contributors
         }
 
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + str(self.access_token))
@@ -122,6 +131,9 @@ class SoftDeskAppAPITestCase(APITestCase):
                     'author': self.issue.author_id,
                     'assigned_to': self.issue.assigned_to_id,
                     'project': self.project.id,
+                    'nature': self.issue.nature,
+                    'priority': self.issue.priority,
+                    'status': self.issue.status
                 }
             ]
         }

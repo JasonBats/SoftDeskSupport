@@ -3,7 +3,7 @@ from rest_framework.test import APITestCase, APIClient
 from django.urls import reverse_lazy
 from rest_framework import status
 
-from SoftDeskApp.models import Project
+from SoftDeskApp.models import Project, Contributor
 
 
 class PermissionsTests(APITestCase):
@@ -42,7 +42,12 @@ class PermissionsTests(APITestCase):
             author=self.staff_user,
         )
 
-    def test_patch_project_without_permission(self):
+        self.contributors = Contributor.objects.create(
+            user=self.staff_user,
+            project=self.project
+        )
+
+    def test_patch_project_IsOwnerOrReadOnly_False(self):
         self.client.force_authenticate(user=self.employee_user)
 
         url = reverse_lazy('project-detail', kwargs={'pk': 1})
@@ -50,7 +55,7 @@ class PermissionsTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_patch_project_with_permission(self):
+    def test_patch_project_IsOwnerOrReadOnly_True(self):
         self.client.force_authenticate(user=self.staff_user)
 
         url = reverse_lazy('project-detail', kwargs={'pk': 1})
@@ -58,7 +63,7 @@ class PermissionsTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_user_info_with_permission(self):
+    def test_get_user_details_IsRightUser_True(self):
         self.client.force_authenticate(user=self.employee_user)
 
         url = reverse_lazy('user-detail', kwargs={'pk': self.employee_user.pk})
@@ -66,7 +71,7 @@ class PermissionsTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_user_info_without_permission(self):
+    def test_get_user_details_IsRightUser_False(self):
         self.client.force_authenticate(user=self.second_employee_user)
 
         url = reverse_lazy('user-detail', kwargs={'pk': self.employee_user.pk})
@@ -74,7 +79,7 @@ class PermissionsTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_get_user_info_as_staff(self):
+    def test_get_user_details_IsRightUser_True_staff(self):
         self.client.force_authenticate(user=self.staff_user)
 
         url = reverse_lazy('user-detail', kwargs={'pk': self.employee_user.pk})

@@ -24,7 +24,6 @@ class IsProjectContributorAuthenticated(BasePermission):
         project_contributors = [user.user_id for user in
                                 Contributor.objects.filter(
                                     project_id=obj.id)]
-        print(obj)
         return request.user.id in project_contributors
 
 
@@ -60,6 +59,7 @@ class CanManageProjectContributors(BasePermission):
 
 
 class SignupViewPermissions(BasePermission):
+
     def has_permission(self, request, view):
         if request.method == 'POST':
             return True
