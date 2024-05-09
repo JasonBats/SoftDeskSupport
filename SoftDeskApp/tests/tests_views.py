@@ -12,21 +12,6 @@ class SoftDeskAppAPITestCase(APITestCase):
     def format_datetime(self, date):
         return date.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
-    def serialize_comments_list(self, data, is_many):
-        comments_list_serializer = CommentListSerializer(data, many=is_many)
-        serialized_comments = comments_list_serializer.data
-        return serialized_comments
-
-    def serialize_issues_list(self, data, is_many):
-        issues_list_serializer = IssueListSerializer(data, many=is_many)
-        serialized_issues = issues_list_serializer.data
-        return serialized_issues
-
-    def serialize_projects_list(self, data, is_many):
-        projects_list_serializer = ProjectListSerializer(data, many=is_many)
-        serialized_projects = projects_list_serializer.data
-        return serialized_projects
-
     def setUp(self):
 
         self.client = APIClient()
@@ -97,9 +82,7 @@ class SoftDeskAppAPITestCase(APITestCase):
 
         expected = {
             'id': self.project.id,
-            'issues': self.serialize_issues_list(
-                self.project.Issues, True
-            ),
+            'issues': IssueListSerializer(instance=self.project.Issues, many=True).data,
             'name': self.project.name,
             'description': self.project.description,
             'type': self.project.type,
@@ -115,7 +98,6 @@ class SoftDeskAppAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(expected, response.json())
-        # assert expected == response.json()
 
     def test_issue_list(self):
 
@@ -147,9 +129,8 @@ class SoftDeskAppAPITestCase(APITestCase):
 
         expected = {
             'id': self.issue.id,
-            'project':
-                self.serialize_projects_list(self.issue.project, False),
-            'comments': self.serialize_comments_list(self.issue.comments, True),
+            'project': ProjectListSerializer(self.issue.project, many=False).data,
+            'comments': CommentListSerializer(self.issue.comments, many=True).data,
             'name': self.issue.name,
             'description': self.issue.description,
             'date_created': self.format_datetime(self.issue.date_created),
@@ -193,7 +174,7 @@ class SoftDeskAppAPITestCase(APITestCase):
 
         expected = {
             'id': self.comment.id,
-            'issue': self.serialize_issues_list(self.comment.issue, False),
+            'issue': IssueListSerializer(self.comment.issue, many=False).data,
             'description': self.comment.description,
             'date_created': self.format_datetime(self.comment.date_created),
             'date_updated': self.format_datetime(self.comment.date_updated),

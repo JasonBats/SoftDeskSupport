@@ -1,6 +1,6 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 from rest_framework.exceptions import PermissionDenied
-from SoftDeskApp.models import Contributor
+from SoftDeskApp.models import Contributor, Issue
 
 
 class IsProjectContributorAuthenticated(BasePermission):
@@ -24,6 +24,12 @@ class IsProjectContributorAuthenticated(BasePermission):
         project_contributors = [user.user_id for user in
                                 Contributor.objects.filter(
                                     project_id=obj.id)]
+        if isinstance(obj, Issue):
+            project_contributors.extend(user.user_id for user in
+                                        Contributor.objects.filter(
+                                            project_id=obj.project)
+                                        )
+
         return request.user.id in project_contributors
 
 
@@ -48,7 +54,11 @@ class CanManageProjectContributors(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         if request.method == 'DELETE':
-            contributing_to = [project.project_id for project in Contributor.objects.filter(user_id=request.user.id)]
+            contributing_to = [project.project_id for project in
+                               Contributor.objects.filter(
+                                   user_id=request.user.id)
+                               ]
+
             if obj.project.id in contributing_to:
                 return True
             else:
