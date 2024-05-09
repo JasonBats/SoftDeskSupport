@@ -9,7 +9,8 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = '__all__'
+        fields = ['id', 'issues', 'name', 'description', 'type',
+                  'date_created', 'date_updated', 'author', 'contributors']
 
     def get_issues(self, instance):
         issues_queryset = Issue.objects.filter(project=instance)
@@ -37,7 +38,9 @@ class IssueDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Issue
-        fields = '__all__'
+        fields = ['id', 'project', 'comments', 'name', 'description',
+                  'date_created', 'date_updated', 'priority', 'nature',
+                  'status', 'author', 'assigned_to']
 
     def get_project(self, instance):
         queryset = instance.project
@@ -63,7 +66,8 @@ class CommentDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = '__all__'
+        fields = ['id', 'issue', 'description',
+                  'date_created', 'date_updated', 'author']
 
     def get_issue(self, instance):
         queryset = instance.issue
@@ -94,10 +98,13 @@ class UserListSerializer(serializers.ModelSerializer):
 class UserDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ['id', 'password', 'last_login', 'is_superuser', 'username',
+                  'first_name', 'last_name', 'email', 'is_staff', 'is_active',
+                  'date_joined', 'birth_date', 'age', 'can_be_contacted',
+                  'can_be_shared', 'groups', 'user_permissions']
 
     def validate_birth_date(self, birth_date):
-        age = get_user_age(birth_date)
+        age = get_user_age(str(birth_date))
         if age < 15:
             raise serializers.ValidationError('Vous n\'avez pas'
                                               ' l\'age requis (15 ans)')
@@ -106,10 +113,10 @@ class UserDetailSerializer(serializers.ModelSerializer):
 class ContributorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contributor
-        fields = '__all__'
+        fields = ['id', 'project', 'user']
 
 
 class ContributorDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contributor
-        fields = '__all__'
+        fields = ['id', 'project', 'user']
