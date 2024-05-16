@@ -10,9 +10,6 @@ class User(AbstractUser):
     can_be_contacted = models.BooleanField(
         null=False,
         default=False,
-        verbose_name="J'autorise SoftDeskSupport à me contacter"
+        verbose_name="J'autorise SoftDeskSupport à me contacter",
     )
-    can_be_shared = models.BooleanField(
-        null=False,
-        default=False
-    )
+    can_be_shared = models.BooleanField(null=False, default=False)

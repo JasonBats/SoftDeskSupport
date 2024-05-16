@@ -12,45 +12,44 @@ class PermissionsTests(APITestCase):
         self.client = APIClient()
 
         self.staff_user = get_user_model().objects.create(
-            username='staff_user',
-            birth_date='1990-09-09',
+            username="staff_user",
+            birth_date="1990-09-09",
             age=50,
             is_superuser=False,
             is_staff=True,
         )
 
         self.employee_user = get_user_model().objects.create(
-            username='employee_user',
-            birth_date='1990-09-09',
+            username="employee_user",
+            birth_date="1990-09-09",
             age=50,
             is_superuser=False,
             is_staff=False,
         )
 
         self.second_employee_user = get_user_model().objects.create(
-            username='second_employee_user',
-            birth_date='1990-09-09',
+            username="second_employee_user",
+            birth_date="1990-09-09",
             age=50,
             is_superuser=False,
             is_staff=False,
         )
 
         self.project = Project.objects.create(
-            name='API_TEST_PROJECT_MODEL',
-            description='API_TEST_PROJECT_DESCRIPTION',
-            type='iOS',
+            name="API_TEST_PROJECT_MODEL",
+            description="API_TEST_PROJECT_DESCRIPTION",
+            type="iOS",
             author=self.staff_user,
         )
 
         self.contributors = Contributor.objects.create(
-            user=self.staff_user,
-            project=self.project
+            user=self.staff_user, project=self.project
         )
 
     def test_patch_project_IsOwnerOrReadOnly_False(self):
         self.client.force_authenticate(user=self.employee_user)
 
-        url = reverse_lazy('project-detail', kwargs={'pk': 1})
+        url = reverse_lazy("project-detail", kwargs={"pk": 1})
         response = self.client.patch(url)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -58,7 +57,7 @@ class PermissionsTests(APITestCase):
     def test_patch_project_IsOwnerOrReadOnly_True(self):
         self.client.force_authenticate(user=self.staff_user)
 
-        url = reverse_lazy('project-detail', kwargs={'pk': 1})
+        url = reverse_lazy("project-detail", kwargs={"pk": 1})
         response = self.client.patch(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -66,7 +65,7 @@ class PermissionsTests(APITestCase):
     def test_get_user_details_IsRightUser_True(self):
         self.client.force_authenticate(user=self.employee_user)
 
-        url = reverse_lazy('user-detail', kwargs={'pk': self.employee_user.pk})
+        url = reverse_lazy("user-detail", kwargs={"pk": self.employee_user.pk})
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -74,7 +73,7 @@ class PermissionsTests(APITestCase):
     def test_get_user_details_IsRightUser_False(self):
         self.client.force_authenticate(user=self.second_employee_user)
 
-        url = reverse_lazy('user-detail', kwargs={'pk': self.employee_user.pk})
+        url = reverse_lazy("user-detail", kwargs={"pk": self.employee_user.pk})
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -82,7 +81,7 @@ class PermissionsTests(APITestCase):
     def test_get_user_details_IsRightUser_True_staff(self):
         self.client.force_authenticate(user=self.staff_user)
 
-        url = reverse_lazy('user-detail', kwargs={'pk': self.employee_user.pk})
+        url = reverse_lazy("user-detail", kwargs={"pk": self.employee_user.pk})
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)

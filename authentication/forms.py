@@ -6,10 +6,7 @@ from django import forms
 class SignupForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = get_user_model()
-        fields = ('username', 'email', 'birth_date', 'can_be_contacted')
+        fields = ("username", "email", "birth_date", "can_be_contacted")
         widgets = {
-            'birth_date': forms.DateInput(
-                format='%d/%m/%Y',
-                attrs={'type': 'date'}
-            )
+            "birth_date": forms.DateInput(format="%d/%m/%Y", attrs={"type": "date"})
         }

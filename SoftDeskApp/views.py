@@ -4,23 +4,27 @@ from SoftDeskApp.models import Project, Issue, Comment, Contributor
 from SoftDeskSupport.utils import get_user_age
 from authentication.models import User
 
-from SoftDeskApp.serializers import (ProjectListSerializer,
-                                     ProjectDetailSerializer,
-                                     IssueListSerializer,
-                                     IssueDetailSerializer,
-                                     CommentListSerializer,
-                                     CommentDetailSerializer,
-                                     UserListSerializer,
-                                     UserDetailSerializer,
-                                     ContributorSerializer,
-                                     ContributorDetailSerializer)
+from SoftDeskApp.serializers import (
+    ProjectListSerializer,
+    ProjectDetailSerializer,
+    IssueListSerializer,
+    IssueDetailSerializer,
+    CommentListSerializer,
+    CommentDetailSerializer,
+    UserListSerializer,
+    UserDetailSerializer,
+    ContributorSerializer,
+    ContributorDetailSerializer,
+)
 
 from rest_framework.viewsets import ModelViewSet
-from SoftDeskApp.permissions import (IsProjectContributorAuthenticated,
-                                     IsRightUser,
-                                     IsOwnerOrReadOnly,
-                                     CanManageProjectContributors,
-                                     SignupViewPermissions)
+from SoftDeskApp.permissions import (
+    IsProjectContributorAuthenticated,
+    IsRightUser,
+    IsOwnerOrReadOnly,
+    CanManageProjectContributors,
+    SignupViewPermissions,
+)
 
 
 class MultipleSerializerMixin:
@@ -28,7 +32,7 @@ class MultipleSerializerMixin:
     detail_serializer_class = None
 
     def get_serializer_class(self):
-        if self.action == 'retrieve' and self.detail_serializer_class is not None:
+        if self.action == "retrieve" and self.detail_serializer_class is not None:
             return self.detail_serializer_class
         return super().get_serializer_class()
 
@@ -52,7 +56,7 @@ class IssueViewSet(MultipleSerializerMixin, ModelViewSet):
     permission_classes = [IsOwnerOrReadOnly, IsProjectContributorAuthenticated]
 
     def get_queryset(self):
-        project_id = self.request.query_params.get('project')
+        project_id = self.request.query_params.get("project")
         if project_id:
             return Issue.objects.filter(project_id=project_id)
         return Issue.objects.all()
@@ -65,7 +69,7 @@ class CommentViewSet(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = CommentListSerializer
     detail_serializer_class = CommentDetailSerializer
-    permission_classes = [IsOwnerOrReadOnly, IsProjectContributorAuthenticated]
+    permission_classes = [IsOwnerOrReadOnly]
 
     def get_queryset(self):
         return Comment.objects.all()
@@ -84,11 +88,10 @@ class UserListViewSet(MultipleSerializerMixin, ModelViewSet):
         return User.objects.all()
 
     def perform_create(self, serializer):
-        password = self.request.data['password']
+        password = self.request.data["password"]
         hashed_password = make_password(password)
         serializer.save(
-            age=get_user_age(self.request.data['birth_date']),
-            password=hashed_password
+            age=get_user_age(self.request.data["birth_date"]), password=hashed_password
         )
 
 
@@ -101,11 +104,10 @@ class SignUpUserViewSet(ModelViewSet):
         return User.objects.all()
 
     def perform_create(self, serializer):
-        password = self.request.data['password']
+        password = self.request.data["password"]
         hashed_password = make_password(password)
         serializer.save(
-            age=get_user_age(self.request.data['birth_date']),
-            password=hashed_password
+            age=get_user_age(self.request.data["birth_date"]), password=hashed_password
         )
 
 
