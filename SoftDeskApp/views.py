@@ -3,19 +3,25 @@ from rest_framework.viewsets import ModelViewSet
 
 from authentication.models import User
 from SoftDeskApp.models import Comment, Contributor, Issue, Project
-from SoftDeskApp.permissions import (CanManageProjectContributors,
-                                     IsOwnerOrReadOnly,
-                                     IsProjectContributorAuthenticated,
-                                     IsRightUser, SignupViewPermissions)
-from SoftDeskApp.serializers import (CommentDetailSerializer,
-                                     CommentListSerializer,
-                                     ContributorDetailSerializer,
-                                     ContributorSerializer,
-                                     IssueDetailSerializer,
-                                     IssueListSerializer,
-                                     ProjectDetailSerializer,
-                                     ProjectListSerializer,
-                                     UserDetailSerializer, UserListSerializer)
+from SoftDeskApp.permissions import (
+    CanManageProjectContributors,
+    IsOwnerOrReadOnly,
+    IsProjectContributorAuthenticated,
+    IsRightUser,
+    SignupViewPermissions,
+)
+from SoftDeskApp.serializers import (
+    CommentDetailSerializer,
+    CommentListSerializer,
+    ContributorDetailSerializer,
+    ContributorSerializer,
+    IssueDetailSerializer,
+    IssueListSerializer,
+    ProjectDetailSerializer,
+    ProjectListSerializer,
+    UserDetailSerializer,
+    UserListSerializer,
+)
 from SoftDeskSupport.utils import get_user_age
 
 
@@ -26,6 +32,7 @@ class DetailOrListSerializerMixin:
     For example, a detailed serializer might be used for the 'retrieve' action,
     while a less detailed serializer might be used for 'list' or 'create'.
     """
+
     detail_serializer_class = None
 
     def get_serializer_class(self):
@@ -35,7 +42,8 @@ class DetailOrListSerializerMixin:
         'detail_serializer_class'. Otherwise, it calls and returns the
         serializer class from the superclass.
         """
-        if self.action == "retrieve" and self.detail_serializer_class is not None:
+        if (self.action == "retrieve" and
+                self.detail_serializer_class is not None):
             return self.detail_serializer_class
         return super().get_serializer_class()
 
@@ -49,7 +57,9 @@ class ProjectViewSet(DetailOrListSerializerMixin, ModelViewSet):
         return Project.objects.filter(contributors=self.request.user.id)
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user, contributors=[self.request.user])
+        serializer.save(author=self.request.user,
+                        contributors=[self.request.user]
+                        )
 
 
 class IssueViewSet(DetailOrListSerializerMixin, ModelViewSet):
@@ -113,17 +123,17 @@ class SignUpUserViewSet(ModelViewSet):
         birth_date = self.request.data.get("birth_date")
         hashed_password = make_password(password)
 
-        serializer.save(
-            age=get_user_age(birth_date),
-            password=hashed_password
-        )
+        serializer.save(age=get_user_age(birth_date), password=hashed_password)
 
 
 class ContributorViewSet(DetailOrListSerializerMixin, ModelViewSet):
 
     serializer_class = ContributorSerializer
     detail_serializer_class = ContributorDetailSerializer
-    permission_classes = [CanManageProjectContributors, IsProjectContributorAuthenticated]
+    permission_classes = [
+        CanManageProjectContributors,
+        IsProjectContributorAuthenticated,
+    ]
 
     def get_queryset(self):
         return Contributor.objects.all()

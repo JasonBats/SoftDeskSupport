@@ -127,7 +127,11 @@ class Issue(models.Model):
 
 class Comment(models.Model):
     author = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)
-    issue = models.ForeignKey(Issue, on_delete=models.CASCADE, related_name="comments")
+    issue = models.ForeignKey(
+        Issue,
+        on_delete=models.CASCADE,
+        related_name="comments"
+    )
     description = models.TextField(max_length=500, blank=False, null=False)
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
 

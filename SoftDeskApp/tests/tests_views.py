@@ -5,9 +5,11 @@ from rest_framework.test import APIClient, APITestCase
 from rest_framework_simplejwt.tokens import AccessToken
 
 from SoftDeskApp.models import Comment, Contributor, Issue, Project
-from SoftDeskApp.serializers import (CommentListSerializer,
-                                     IssueListSerializer,
-                                     ProjectListSerializer)
+from SoftDeskApp.serializers import (
+    CommentListSerializer,
+    IssueListSerializer,
+    ProjectListSerializer,
+)
 
 
 class SoftDeskAppAPITestCase(APITestCase):
@@ -75,12 +77,14 @@ class SoftDeskAppAPITestCase(APITestCase):
                     "number_of_issues": Issue.objects.filter(
                         project=self.project
                     ).count(),
-                    "contributors": project_contributors
+                    "contributors": project_contributors,
                 }
             ],
         }
 
-        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + str(self.access_token))
+        self.client.credentials(
+            HTTP_AUTHORIZATION="Bearer " + str(self.access_token)
+        )
         response = self.client.get(reverse_lazy("project-list"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(expected, response.json())
@@ -94,7 +98,9 @@ class SoftDeskAppAPITestCase(APITestCase):
 
         expected = {
             "id": self.project.id,
-            "issues": IssueListSerializer(instance=self.project.Issues, many=True).data,
+            "issues": IssueListSerializer(
+                instance=self.project.Issues, many=True
+            ).data,
             "name": self.project.name,
             "description": self.project.description,
             "type": self.project.type,
@@ -104,8 +110,12 @@ class SoftDeskAppAPITestCase(APITestCase):
             "contributors": project_contributors,
         }
 
-        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + str(self.access_token))
-        response = self.client.get(reverse_lazy("project-detail", kwargs={"pk": 1}))
+        self.client.credentials(
+            HTTP_AUTHORIZATION="Bearer " + str(self.access_token)
+        )
+        response = self.client.get(
+            reverse_lazy("project-detail", kwargs={"pk": 1})
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(expected, response.json())
 
@@ -130,7 +140,9 @@ class SoftDeskAppAPITestCase(APITestCase):
             ],
         }
 
-        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + str(self.access_token))
+        self.client.credentials(
+            HTTP_AUTHORIZATION="Bearer " + str(self.access_token)
+        )
         response = self.client.get(reverse_lazy("issue-list"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(expected, response.json())
@@ -139,8 +151,12 @@ class SoftDeskAppAPITestCase(APITestCase):
 
         expected = {
             "id": self.issue.id,
-            "project": ProjectListSerializer(self.issue.project, many=False).data,
-            "comments": CommentListSerializer(self.issue.comments, many=True).data,
+            "project": ProjectListSerializer(
+                self.issue.project, many=False
+            ).data,
+            "comments": CommentListSerializer(
+                self.issue.comments, many=True
+            ).data,
             "name": self.issue.name,
             "description": self.issue.description,
             "date_created": self.format_datetime(self.issue.date_created),
@@ -152,7 +168,9 @@ class SoftDeskAppAPITestCase(APITestCase):
             "assigned_to": self.issue.assigned_to_id,
         }
 
-        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + str(self.access_token))
+        self.client.credentials(
+            HTTP_AUTHORIZATION="Bearer " + str(self.access_token)
+        )
         response = self.client.get(
             reverse_lazy("issue-detail", kwargs={"pk": self.issue.id})
         )
@@ -174,7 +192,9 @@ class SoftDeskAppAPITestCase(APITestCase):
             ],
         }
 
-        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + str(self.access_token))
+        self.client.credentials(
+            HTTP_AUTHORIZATION="Bearer " + str(self.access_token)
+        )
         response = self.client.get(reverse_lazy("comment-list"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(expected, response.json())
@@ -190,7 +210,9 @@ class SoftDeskAppAPITestCase(APITestCase):
             "author": self.comment.author_id,
         }
 
-        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + str(self.access_token))
+        self.client.credentials(
+            HTTP_AUTHORIZATION="Bearer " + str(self.access_token)
+        )
         response = self.client.get(
             reverse_lazy("comment-detail", kwargs={"pk": self.comment.id})
         )

@@ -21,3 +21,11 @@
 ## Run tests :
 
 `python manage.py test`
+
+## Generate flake8 report :
+`flake8 --format=html --htmldir=flake8_report --exclude=.venv,htmlcov,*/migrations/*,settings.py`
+
+## Generate coverage report :
+1 - `coverage run manage.py test` \
+2 - `coverage html` \
+3 - Report generated > `htmlcov\index.html`

@@ -73,9 +73,9 @@ class PermissionsTests(APITestCase):
 
         url = reverse_lazy("project-list")
         data = {
-                "name": "Projet TEST auteur = contributeur",
-                "description": "Test permissions",
-                "author": self.second_employee_user.id
+            "name": "Projet TEST auteur = contributeur",
+            "description": "Test permissions",
+            "author": self.second_employee_user.id,
         }
         response = self.client.post(url, data, format="json")
 
@@ -92,9 +92,9 @@ class PermissionsTests(APITestCase):
             "priority": "HIGH",
             "nature": "BUG",
             "status": "Finished",
-            "author": self.second_employee_user.id
+            "author": self.second_employee_user.id,
         }
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -109,17 +109,17 @@ class PermissionsTests(APITestCase):
             "priority": "HIGH",
             "nature": "BUG",
             "status": "Finished",
-            "author": self.employee_user.id
+            "author": self.employee_user.id,
         }
 
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_get_project_issues_IsProjectContributorAuthenticated_True(self):
         self.client.force_authenticate(user=self.employee_user)
 
         url = reverse_lazy("issue-list")
-        query_params = {'project': self.project.id}
+        query_params = {"project": self.project.id}
         full_url = f"{url}?{urlencode(query_params)}"
         response = self.client.get(full_url)
 
@@ -230,7 +230,7 @@ class PermissionsTests(APITestCase):
             "is_staff": False,
             "is_active": True,
             "birth_date": "1990-09-09",
-            "age": 0
+            "age": 0,
         }
 
         response = self.client.post(url, data, format="json")
@@ -247,13 +247,13 @@ class PermissionsTests(APITestCase):
             "priority": "HIGH",
             "nature": "BUG",
             "status": "Finished",
-            "author": self.second_employee_user.id
+            "author": self.second_employee_user.id,
         }
         self.client.post(url_issue, data_issue, format="json")
         url = reverse_lazy("comment-list")
         data = {
             "issue": 1,
-            "description": "Je dépose un commentaire à propos de l'issue 1 du projet 1"
+            "description": "Commentaire à propos de l'issue 1 du projet 1",
         }
         response = self.client.post(url, data, format="json")
 

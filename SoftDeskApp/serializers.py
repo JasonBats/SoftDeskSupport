@@ -34,10 +34,19 @@ class ProjectListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["id", "name", "description", "author", "number_of_issues", "contributors"]
+        fields = [
+            "id",
+            "name",
+            "description",
+            "author",
+            "number_of_issues",
+            "contributors",
+        ]
 
     def get_number_of_issues(self, instance):
-        number_of_issues_queryset = Issue.objects.filter(project=instance).count()
+        number_of_issues_queryset = Issue.objects.filter(
+            project=instance
+        ).count()
         return number_of_issues_queryset
 
 
@@ -94,7 +103,11 @@ class IssueListSerializer(serializers.ModelSerializer):
         assigned_to = data.get("assigned_to")
 
         if project and assigned_to:
-            contributors = [user.user_id for user in Contributor.objects.filter(project=project)]
+            contributors = [
+                user.user_id for user in Contributor.objects.filter(
+                    project=project
+                )
+            ]
             if assigned_to not in contributors:
                 raise serializers.ValidationError(
                     "You can't assign this issue to someone"
