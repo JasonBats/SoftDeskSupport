@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from SoftDeskApp.models import Project, Issue, Comment, Contributor
-from SoftDeskSupport.utils import get_user_age
+
 from authentication.models import User
+from SoftDeskApp.models import Comment, Contributor, Issue, Project
+from SoftDeskSupport.utils import get_user_age
 
 
 class ProjectDetailSerializer(serializers.ModelSerializer):
@@ -33,7 +34,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["id", "name", "description", "author", "number_of_issues"]
+        fields = ["id", "name", "description", "author", "number_of_issues", "contributors"]
 
     def get_number_of_issues(self, instance):
         number_of_issues_queryset = Issue.objects.filter(project=instance).count()
@@ -87,6 +88,20 @@ class IssueListSerializer(serializers.ModelSerializer):
             "nature",
             "status",
         ]
+
+    def validate(self, data):
+        project = data.get("project")
+        assigned_to = data.get("assigned_to")
+
+        if project and assigned_to:
+            contributors = [user.user_id for user in Contributor.objects.filter(project=project)]
+            if assigned_to not in contributors:
+                raise serializers.ValidationError(
+                    "You can't assign this issue to someone"
+                    " not contributing to this project"
+                )
+
+        return data
 
 
 class CommentDetailSerializer(serializers.ModelSerializer):
@@ -148,7 +163,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
             "birth_date",
             "age",
             "can_be_contacted",
-            "can_be_shared",
+            "can_data_be_shared",
             "groups",
             "user_permissions",
         ]
@@ -159,6 +174,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Vous n'avez pas" " l'age requis (15 ans)"
             )
+        return birth_date
 
 
 class ContributorSerializer(serializers.ModelSerializer):

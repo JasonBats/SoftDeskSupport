@@ -1,55 +1,58 @@
 from django.contrib.auth.hashers import make_password
-
-from SoftDeskApp.models import Project, Issue, Comment, Contributor
-from SoftDeskSupport.utils import get_user_age
-from authentication.models import User
-
-from SoftDeskApp.serializers import (
-    ProjectListSerializer,
-    ProjectDetailSerializer,
-    IssueListSerializer,
-    IssueDetailSerializer,
-    CommentListSerializer,
-    CommentDetailSerializer,
-    UserListSerializer,
-    UserDetailSerializer,
-    ContributorSerializer,
-    ContributorDetailSerializer,
-)
-
 from rest_framework.viewsets import ModelViewSet
-from SoftDeskApp.permissions import (
-    IsProjectContributorAuthenticated,
-    IsRightUser,
-    IsOwnerOrReadOnly,
-    CanManageProjectContributors,
-    SignupViewPermissions,
-)
+
+from authentication.models import User
+from SoftDeskApp.models import Comment, Contributor, Issue, Project
+from SoftDeskApp.permissions import (CanManageProjectContributors,
+                                     IsOwnerOrReadOnly,
+                                     IsProjectContributorAuthenticated,
+                                     IsRightUser, SignupViewPermissions)
+from SoftDeskApp.serializers import (CommentDetailSerializer,
+                                     CommentListSerializer,
+                                     ContributorDetailSerializer,
+                                     ContributorSerializer,
+                                     IssueDetailSerializer,
+                                     IssueListSerializer,
+                                     ProjectDetailSerializer,
+                                     ProjectListSerializer,
+                                     UserDetailSerializer, UserListSerializer)
+from SoftDeskSupport.utils import get_user_age
 
 
-class MultipleSerializerMixin:
-
+class DetailOrListSerializerMixin:
+    """
+    A mixin that allows multiple serializers to be used, based on the action
+    being performed.
+    For example, a detailed serializer might be used for the 'retrieve' action,
+    while a less detailed serializer might be used for 'list' or 'create'.
+    """
     detail_serializer_class = None
 
     def get_serializer_class(self):
+        """
+        Return the serializer class to be used for the current action.
+        If the current action is 'retrieve', it returns
+        'detail_serializer_class'. Otherwise, it calls and returns the
+        serializer class from the superclass.
+        """
         if self.action == "retrieve" and self.detail_serializer_class is not None:
             return self.detail_serializer_class
         return super().get_serializer_class()
 
 
-class ProjectViewSet(MultipleSerializerMixin, ModelViewSet):
+class ProjectViewSet(DetailOrListSerializerMixin, ModelViewSet):
     serializer_class = ProjectListSerializer
     detail_serializer_class = ProjectDetailSerializer
-    permission_classes = [IsOwnerOrReadOnly, IsProjectContributorAuthenticated]
+    permission_classes = [IsOwnerOrReadOnly]
 
     def get_queryset(self):
-        return Project.objects.all()
+        return Project.objects.filter(contributors=self.request.user.id)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, contributors=[self.request.user])
 
 
-class IssueViewSet(MultipleSerializerMixin, ModelViewSet):
+class IssueViewSet(DetailOrListSerializerMixin, ModelViewSet):
 
     serializer_class = IssueListSerializer
     detail_serializer_class = IssueDetailSerializer
@@ -65,7 +68,7 @@ class IssueViewSet(MultipleSerializerMixin, ModelViewSet):
         serializer.save(author=self.request.user)
 
 
-class CommentViewSet(MultipleSerializerMixin, ModelViewSet):
+class CommentViewSet(DetailOrListSerializerMixin, ModelViewSet):
 
     serializer_class = CommentListSerializer
     detail_serializer_class = CommentDetailSerializer
@@ -78,7 +81,7 @@ class CommentViewSet(MultipleSerializerMixin, ModelViewSet):
         serializer.save(author=self.request.user)
 
 
-class UserListViewSet(MultipleSerializerMixin, ModelViewSet):
+class UserListViewSet(DetailOrListSerializerMixin, ModelViewSet):
 
     serializer_class = UserListSerializer
     detail_serializer_class = UserDetailSerializer
@@ -90,8 +93,10 @@ class UserListViewSet(MultipleSerializerMixin, ModelViewSet):
     def perform_create(self, serializer):
         password = self.request.data["password"]
         hashed_password = make_password(password)
+
         serializer.save(
-            age=get_user_age(self.request.data["birth_date"]), password=hashed_password
+            age=get_user_age(self.request.data["birth_date"]),
+            password=hashed_password
         )
 
 
@@ -104,18 +109,21 @@ class SignUpUserViewSet(ModelViewSet):
         return User.objects.all()
 
     def perform_create(self, serializer):
-        password = self.request.data["password"]
+        password = self.request.data.get("password")
+        birth_date = self.request.data.get("birth_date")
         hashed_password = make_password(password)
+
         serializer.save(
-            age=get_user_age(self.request.data["birth_date"]), password=hashed_password
+            age=get_user_age(birth_date),
+            password=hashed_password
         )
 
 
-class ContributorViewSet(MultipleSerializerMixin, ModelViewSet):
+class ContributorViewSet(DetailOrListSerializerMixin, ModelViewSet):
 
     serializer_class = ContributorSerializer
     detail_serializer_class = ContributorDetailSerializer
-    permission_classes = [CanManageProjectContributors]
+    permission_classes = [CanManageProjectContributors, IsProjectContributorAuthenticated]
 
     def get_queryset(self):
         return Contributor.objects.all()

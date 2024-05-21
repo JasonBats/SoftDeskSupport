@@ -1,22 +1,13 @@
 from django.contrib import admin
 from django.contrib.auth.views import LoginView, LogoutView
-from django.urls import path, include
-from authentication.views import signup
-from SoftDeskApp.views import (
-    ProjectViewSet,
-    IssueViewSet,
-    CommentViewSet,
-    UserListViewSet,
-    ContributorViewSet,
-    SignUpUserViewSet,
-)
-
+from django.urls import include, path
 from rest_framework import routers
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-    TokenVerifyView,
-)
+from rest_framework_simplejwt.views import (TokenObtainPairView,
+                                            TokenRefreshView, TokenVerifyView)
+
+from SoftDeskApp.views import (CommentViewSet, ContributorViewSet,
+                               IssueViewSet, ProjectViewSet, SignUpUserViewSet,
+                               UserListViewSet)
 
 router = routers.SimpleRouter()
 

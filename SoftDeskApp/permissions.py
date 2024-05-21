@@ -1,5 +1,6 @@
-from rest_framework.permissions import BasePermission, SAFE_METHODS
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.permissions import SAFE_METHODS, BasePermission
+
 from SoftDeskApp.models import Contributor, Issue
 
 
@@ -8,7 +9,6 @@ class IsProjectContributorAuthenticated(BasePermission):
         if request.user.is_staff:
             return True
         if request.method == "POST":
-            print(request.data)
             project_contributors = [
                 user.user_id
                 for user in Contributor.objects.filter(
@@ -19,7 +19,7 @@ class IsProjectContributorAuthenticated(BasePermission):
                 return True
             else:
                 raise PermissionDenied(
-                    "Vous devez être contributeur" " de ce projet pour faire cela."
+                    "You must be contributing to this project to do this"
                 )
         return request.user.is_authenticated
 
@@ -65,7 +65,7 @@ class CanManageProjectContributors(BasePermission):
                 return True
             else:
                 raise PermissionDenied(
-                    "Vous devez être contributeur" " de ce projet pour faire cela."
+                    "You must be contributing to this project to do this"
                 )
         elif request.method in SAFE_METHODS:
             return request.user.is_authenticated

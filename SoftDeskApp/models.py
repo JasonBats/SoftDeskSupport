@@ -1,4 +1,7 @@
+import uuid
+
 from django.db import models
+
 from SoftDeskSupport.settings import AUTH_USER_MODEL
 
 
@@ -15,14 +18,13 @@ class Project(models.Model):
         (ANDROID, "Android"),
     )
 
-    name = models.CharField(max_length=120, blank=False, null=False)
+    name = models.CharField(max_length=120, blank=False)
     description = models.TextField(max_length=500, blank=True, null=True)
     type = models.CharField(
         max_length=10,
         choices=TYPE_CHOICES,
         verbose_name="Type",
         blank=False,
-        null=False,
     )
 
     date_created = models.DateTimeField(auto_now_add=True)
@@ -32,7 +34,6 @@ class Project(models.Model):
         AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         blank=False,
-        null=False,
         related_name="author_of",
     )
 
@@ -69,7 +70,7 @@ class Issue(models.Model):
         (FINISHED, "Finished"),
     )
 
-    name = models.CharField(max_length=120, blank=False, null=False)
+    name = models.CharField(max_length=120, blank=False)
     description = models.TextField(max_length=500, blank=True, null=True)
 
     date_created = models.DateTimeField(auto_now_add=True)
@@ -79,7 +80,6 @@ class Issue(models.Model):
         AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="created_issues",
-        null=False,
         blank=False,
     )
 
@@ -95,7 +95,6 @@ class Issue(models.Model):
         choices=PRIORITY_CHOICES,
         verbose_name="Priority",
         blank=False,
-        null=False,
         default=MEDIUM,
     )
 
@@ -104,7 +103,6 @@ class Issue(models.Model):
         choices=NATURE_CHOICES,
         verbose_name="Nature",
         blank=False,
-        null=False,
         default=TASK,
     )
 
@@ -113,7 +111,6 @@ class Issue(models.Model):
         choices=STATUS_CHOICES,
         verbose_name="Status",
         blank=False,
-        null=False,
         default=TO_DO,
     )
 
@@ -121,7 +118,6 @@ class Issue(models.Model):
         Project,
         on_delete=models.CASCADE,
         related_name="Issues",
-        null=False,
         blank=False,
     )
 
@@ -133,6 +129,7 @@ class Comment(models.Model):
     author = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)
     issue = models.ForeignKey(Issue, on_delete=models.CASCADE, related_name="comments")
     description = models.TextField(max_length=500, blank=False, null=False)
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
 
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)

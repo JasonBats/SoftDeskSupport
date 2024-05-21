@@ -1,5 +1,6 @@
 from django.contrib import admin
-from SoftDeskApp.models import Project, Issue, Comment, Contributor
+
+from SoftDeskApp.models import Project
 
 
 class ProjectAdmin(admin.ModelAdmin):

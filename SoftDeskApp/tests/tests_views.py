@@ -1,14 +1,13 @@
-from django.urls import reverse_lazy
 from django.contrib.auth import get_user_model
-from rest_framework_simplejwt.tokens import AccessToken
+from django.urls import reverse_lazy
 from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
-from SoftDeskApp.models import Project, Issue, Comment, Contributor
-from SoftDeskApp.serializers import (
-    IssueListSerializer,
-    ProjectListSerializer,
-    CommentListSerializer,
-)
+from rest_framework.test import APIClient, APITestCase
+from rest_framework_simplejwt.tokens import AccessToken
+
+from SoftDeskApp.models import Comment, Contributor, Issue, Project
+from SoftDeskApp.serializers import (CommentListSerializer,
+                                     IssueListSerializer,
+                                     ProjectListSerializer)
 
 
 class SoftDeskAppAPITestCase(APITestCase):
@@ -58,6 +57,11 @@ class SoftDeskAppAPITestCase(APITestCase):
 
     def test_project_list(self):
 
+        project_contributors = [
+            user.user_id
+            for user in Contributor.objects.filter(project_id=self.project.id)
+        ]
+
         expected = {
             "count": 1,
             "next": None,
@@ -71,6 +75,7 @@ class SoftDeskAppAPITestCase(APITestCase):
                     "number_of_issues": Issue.objects.filter(
                         project=self.project
                     ).count(),
+                    "contributors": project_contributors
                 }
             ],
         }
@@ -162,7 +167,7 @@ class SoftDeskAppAPITestCase(APITestCase):
             "previous": None,
             "results": [
                 {
-                    "id": self.comment.id,
+                    "id": str(self.comment.id),
                     "issue": self.comment.issue_id,
                     "description": self.comment.description,
                 }
@@ -177,7 +182,7 @@ class SoftDeskAppAPITestCase(APITestCase):
     def test_comment_detail(self):
 
         expected = {
-            "id": self.comment.id,
+            "id": str(self.comment.id),
             "issue": IssueListSerializer(self.comment.issue, many=False).data,
             "description": self.comment.description,
             "date_created": self.format_datetime(self.comment.date_created),
