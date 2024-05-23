@@ -108,7 +108,7 @@ class IssueListSerializer(serializers.ModelSerializer):
                     project=project
                 )
             ]
-            if assigned_to not in contributors:
+            if assigned_to.id not in contributors:
                 raise serializers.ValidationError(
                     "You can't assign this issue to someone"
                     " not contributing to this project"

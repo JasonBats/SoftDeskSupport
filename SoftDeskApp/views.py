@@ -52,6 +52,7 @@ class ProjectViewSet(DetailOrListSerializerMixin, ModelViewSet):
     serializer_class = ProjectListSerializer
     detail_serializer_class = ProjectDetailSerializer
     permission_classes = [IsOwnerOrReadOnly]
+    http_method_names = ["get", "post", "head", "patch", "delete"]
 
     def get_queryset(self):
         return Project.objects.filter(contributors=self.request.user.id)
@@ -67,6 +68,7 @@ class IssueViewSet(DetailOrListSerializerMixin, ModelViewSet):
     serializer_class = IssueListSerializer
     detail_serializer_class = IssueDetailSerializer
     permission_classes = [IsOwnerOrReadOnly, IsProjectContributorAuthenticated]
+    http_method_names = ["get", "post", "head", "patch", "delete"]
 
     def get_queryset(self):
         project_id = self.request.query_params.get("project")
@@ -83,6 +85,7 @@ class CommentViewSet(DetailOrListSerializerMixin, ModelViewSet):
     serializer_class = CommentListSerializer
     detail_serializer_class = CommentDetailSerializer
     permission_classes = [IsOwnerOrReadOnly]
+    http_method_names = ["get", "post", "head", "patch", "delete"]
 
     def get_queryset(self):
         return Comment.objects.all()
@@ -96,6 +99,7 @@ class UserListViewSet(DetailOrListSerializerMixin, ModelViewSet):
     serializer_class = UserListSerializer
     detail_serializer_class = UserDetailSerializer
     permission_classes = [IsRightUser]
+    http_method_names = ["get", "post", "head", "patch", "delete"]
 
     def get_queryset(self):
         return User.objects.all()
@@ -114,6 +118,7 @@ class SignUpUserViewSet(ModelViewSet):
 
     serializer_class = UserDetailSerializer
     permission_classes = [SignupViewPermissions]
+    http_method_names = ["get", "post", "head", "patch", "delete"]
 
     def get_queryset(self):
         return User.objects.all()
@@ -134,6 +139,7 @@ class ContributorViewSet(DetailOrListSerializerMixin, ModelViewSet):
         CanManageProjectContributors,
         IsProjectContributorAuthenticated,
     ]
+    http_method_names = ["get", "post", "head", "patch", "delete"]
 
     def get_queryset(self):
         return Contributor.objects.all()
